@@ -3,6 +3,6 @@ package main
 import "github.com/jakubson7/sunset-cafe/app"
 
 func main() {
-	app := app.CreateApp()
+	app := app.CreateApp(app.TestPlugin)
 	app.Start()
 }

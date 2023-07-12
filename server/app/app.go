@@ -5,21 +5,24 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jakubson7/sunset-cafe/db"
 )
 
 type App struct {
-	Router *chi.Mux
+	Router     *chi.Mux
+	DBProvider db.DBProvider
 }
 
-type optFunc func(app *App)
+type Plugin func(app *App)
 
 func (app *App) Start() {
 	http.ListenAndServe(":3000", app.Router)
 }
 
-func CreateApp(optFuncs ...optFunc) *App {
+func CreateApp(plugins ...Plugin) *App {
 	app := &App{
-		Router: chi.NewRouter(),
+		Router:     chi.NewRouter(),
+		DBProvider: db.CreateSqliteProvider(),
 	}
 
 	app.Router.Use(middleware.Logger)
@@ -27,8 +30,8 @@ func CreateApp(optFuncs ...optFunc) *App {
 		w.Write([]byte("Sunset-Cafe backend"))
 	})
 
-	for _, optFunc := range optFuncs {
-		optFunc(app)
+	for _, plugin := range plugins {
+		plugin(app)
 	}
 
 	return app
