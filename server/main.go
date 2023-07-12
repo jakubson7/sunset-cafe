@@ -1,7 +1,8 @@
 package main
 
-import "fmt"
+import "github.com/jakubson7/sunset-cafe/app"
 
 func main() {
-	fmt.Println("Hello Sunset Cafe")
+	app := app.CreateApp()
+	app.Start()
 }
