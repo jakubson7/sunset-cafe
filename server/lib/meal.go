@@ -7,3 +7,7 @@ type Meal struct {
 	Price float32
 	ImgID int
 }
+
+func NewMeal(name string, price float32) {
+
+}

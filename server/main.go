@@ -10,7 +10,8 @@ func main() {
 	sqlite := db.NewSqlite()
 	defer sqlite.Close()
 
-	repos.SetupFromScratch(sqlite)
+	repos.Setup(sqlite)
+	repos.Refresh()
 	repos.MockMeals()
 
 	r := router.NewRouter()

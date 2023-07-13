@@ -9,7 +9,7 @@ import (
 func NewRouter() *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Group(testGroup)
+	r.Get("/meal/{ID}", handleGetMealByID)
 
 	return r
 }

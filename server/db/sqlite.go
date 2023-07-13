@@ -9,7 +9,6 @@ import (
 
 func NewSqlite() *sql.DB {
 	db, err := sql.Open("sqlite3", ":memory:")
-
 	if err != nil {
 		log.Fatal(err)
 	}
