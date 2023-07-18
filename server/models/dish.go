@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 
+	"github.com/gosimple/slug"
 	"github.com/jakubson7/sunset-cafe/db"
 )
 
@@ -10,9 +11,18 @@ type Dish struct {
 	ID          int     `json:"ID"`
 	Name        string  `json:"name"`
 	Slug        string  `json:"slug"`
-	Price       float32 `json:"price"`
 	Description string  `json:"description"`
+	Price       float32 `json:"price"`
 	ImgID       int     `json:"imgID"`
+}
+
+func NewDish(name string, price float32, description string) *Dish {
+	return &Dish{
+		Name:        name,
+		Slug:        slug.Make(name),
+		Price:       price,
+		Description: description,
+	}
 }
 
 type DishWithImage struct {
@@ -34,9 +44,9 @@ func (m *DishModel) SetupTable() error {
 			dishID INTEGER,
 			name TEXT NOT NULL,
 			slug TEXT NOT NULL,
-			price FLOAT NOT NULL,
 			desciption TEXT NOT NULL,
-			imgID int,
+			price FLOAT NOT NULL,
+			imgID INTEGER,
 
 			PRIMARY KEY(dishID),
 			FOREIGN KEY(imgID) REFERENCES images(imgID)
@@ -58,7 +68,7 @@ func (m *DishModel) GetByID(ID string) (*DishWithImage, error) {
 
 	var dish DishWithImage
 	err = row.Scan(
-		&dish.ID, &dish.Name, &dish.Slug, &dish.Price, &dish.Description, &dish.ImgID,
+		&dish.ID, &dish.Name, &dish.Slug, &dish.Description, &dish.Price, &dish.ImgID,
 		&dish.Image.ID, &dish.Image.Name, &dish.Image.Slug, &dish.Image.Provider, &dish.Image.SmallURL, &dish.Image.MediumURL, &dish.Image.BigURL,
 	)
 	if err != nil {
@@ -66,4 +76,13 @@ func (m *DishModel) GetByID(ID string) (*DishWithImage, error) {
 	}
 
 	return &dish, nil
+}
+
+func (m *DishModel) Create(dish *Dish) error {
+	return db.PrepareAndExec(m.db, `
+		INSERT INTO dishes
+			(name, slug, price, desciption, price, imgID)
+		VALUES
+			($1, $2, $3, $4, $5, $6)
+	`, dish.Name, dish.Slug, dish.Description, dish.Price, dish.ImgID)
 }

@@ -22,6 +22,12 @@ func NewAPI() *API {
 	dishModel := models.NewDishModel(db)
 	imageModel := models.NewImageModel(db)
 
+	err := dishModel.SetupTable()
+	err = imageModel.SetupTable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	api := &API{
 		addr:  ":8000",
 		db:    db,

@@ -1,6 +1,8 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 func PrepareAndExec(db *sql.DB, query string, args ...any) error {
 	stm, err := db.Prepare(query)
@@ -8,7 +10,13 @@ func PrepareAndExec(db *sql.DB, query string, args ...any) error {
 		return err
 	}
 
-	_, err = stm.Exec(args)
+	// Empty args are read as []inteface{} and couse error while beeing passed to `Exec`
+	if len(args) == 0 {
+		_, err := stm.Exec()
+		return err
+	}
+	_, err = stm.Exec(args...)
+
 	return err
 }
 
