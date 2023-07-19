@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 
 	"github.com/gosimple/slug"
 	"github.com/jakubson7/sunset-cafe/db"
@@ -16,15 +17,6 @@ type Dish struct {
 	ImgID       int     `json:"imgID"`
 }
 
-func NewDish(name string, price float32, description string) *Dish {
-	return &Dish{
-		Name:        name,
-		Slug:        slug.Make(name),
-		Price:       price,
-		Description: description,
-	}
-}
-
 type DishWithImage struct {
 	Dish
 	Image Image `json:"image"`
@@ -34,12 +26,22 @@ type DishModel struct {
 	db *sql.DB
 }
 
+func NewDish(name string, price float32, description string, imgID int) *Dish {
+	return &Dish{
+		Name:        name,
+		Slug:        slug.Make(name),
+		Price:       price,
+		Description: description,
+		ImgID:       imgID,
+	}
+}
+
 func NewDishModel(db *sql.DB) *DishModel {
 	return &DishModel{db}
 }
 
-func (m *DishModel) SetupTable() error {
-	return db.PrepareAndExec(m.db, `
+func (m *DishModel) SetupTable() {
+	err := db.PrepareAndExec(m.db, `
 		CREATE TABLE dishes (
 			dishID INTEGER,
 			name TEXT NOT NULL,
@@ -52,14 +54,18 @@ func (m *DishModel) SetupTable() error {
 			FOREIGN KEY(imgID) REFERENCES images(imgID)
 		)
 	`)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func (m *DishModel) GetByID(ID string) (*DishWithImage, error) {
+func (m *DishModel) GetByID(ID int) (*DishWithImage, error) {
 	row, err := db.PrepareAndQueryOne(m.db, `
 		SELECT *
 		FROM dishes
 		INNER JOIN images
-		ON dishID = imageID
+		ON dishes.dishID = images.imageID
+		WHERE dishes.dishID = $1
 	`, ID)
 
 	if err != nil {
@@ -78,11 +84,11 @@ func (m *DishModel) GetByID(ID string) (*DishWithImage, error) {
 	return &dish, nil
 }
 
-func (m *DishModel) Create(dish *Dish) error {
+func (m *DishModel) CreateOne(dish *Dish) error {
 	return db.PrepareAndExec(m.db, `
 		INSERT INTO dishes
-			(name, slug, price, desciption, price, imgID)
+			(name, slug, desciption, price, imgID)
 		VALUES
-			($1, $2, $3, $4, $5, $6)
+			($1, $2, $3, $4, $5)
 	`, dish.Name, dish.Slug, dish.Description, dish.Price, dish.ImgID)
 }

@@ -26,7 +26,7 @@ func PrepareAndQuery(db *sql.DB, query string, args ...any) (*sql.Rows, error) {
 		return nil, err
 	}
 
-	return stm.Query(args)
+	return stm.Query(args...)
 }
 
 func PrepareAndQueryOne(db *sql.DB, query string, args ...any) (*sql.Row, error) {
@@ -35,5 +35,5 @@ func PrepareAndQueryOne(db *sql.DB, query string, args ...any) (*sql.Row, error)
 		return nil, err
 	}
 
-	return stm.QueryRow(args), nil
+	return stm.QueryRow(args...), nil
 }
