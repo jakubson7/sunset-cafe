@@ -5,6 +5,7 @@ import (
 )
 
 type UserService[T any] interface {
-	GetUserByID(ID int) (models.User, error)
 	CreateUser(create models.UserCreate) (models.User, error)
+	GetUserByID(ID int) (models.User, error)
+	GetUsers(limit int, offset int) ([]models.User, error)
 }
