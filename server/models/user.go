@@ -13,7 +13,7 @@ type User struct {
 }
 
 func (create *UserCreate) Validate() error {
-	e := newValidationError("User")
+	e := newValidationError("UserCreate")
 
 	if trim(create.Email) == "" {
 		return e.From("Email cannot be an empty string")
@@ -32,16 +32,13 @@ func (create *UserCreate) Validate() error {
 	return nil
 }
 
-func NewUser(create UserCreate, timestamp Timestamp, ID int64) (User, error) {
-	user := User{}
-
-	if err := create.Validate(); err != nil {
-		return user, err
+func (m *User) Validate() error {
+	if err := m.Timestamp.Validate(); err != nil {
+		return err
+	}
+	if err := m.UserCreate.Validate(); err != nil {
+		return err
 	}
 
-	user.UserCreate = create
-	user.UserID = ID
-	user.Timestamp = timestamp
-
-	return user, nil
+	return nil
 }

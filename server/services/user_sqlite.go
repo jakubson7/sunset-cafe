@@ -61,6 +61,10 @@ func (s *SqliteUserService) CreateUser(create models.UserCreate) (models.User, e
 	e := newServiceError(s.name, "CreateUser")
 	ts := models.NewTimestamp()
 
+	if err := create.Validate(); err != nil {
+		return models.User{}, e.Wrap(err)
+	}
+
 	result, err := s.stmt_createUser.Exec(
 		ts.CreatedAt,
 		ts.UpdatedAt,
@@ -77,8 +81,11 @@ func (s *SqliteUserService) CreateUser(create models.UserCreate) (models.User, e
 		return models.User{}, e.Wrap(err)
 	}
 
-	user, err := models.NewUser(create, ts, ID)
-	return user, e.Wrap(err)
+	return models.User{
+		UserID:     ID,
+		Timestamp:  ts,
+		UserCreate: create,
+	}, e.Wrap(err)
 }
 
 func (s *SqliteUserService) GetUserByID(ID int64) (models.User, error) {
