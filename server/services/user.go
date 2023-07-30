@@ -113,6 +113,9 @@ func (s *UserService) GetUsers(limit int, offset int) ([]models.User, error) {
 }
 
 func (s *UserService) ewrap(err error) error {
+	if err == nil {
+		return nil
+	}
 	return errors.New(fmt.Sprintf("(UserService) -> %v", err))
 }
 func (s *UserService) efatal(err error) {

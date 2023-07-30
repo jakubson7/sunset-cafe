@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/jakubson7/sunset-cafe/config"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserCreate struct {
@@ -31,13 +34,6 @@ const UserSQL = `
 	)
 `
 
-func (create *UserCreate) efrom(text string) error {
-	return errors.New(fmt.Sprintf("(UserCreate) -> %s", text))
-}
-func (create *UserCreate) ewrap(err error) error {
-	return errors.New(fmt.Sprintf("(UserCreate) -> %v", err))
-}
-
 func (create *UserCreate) Validate() error {
 	if trim(create.Email) == "" {
 		return create.efrom("Email cannot be an empty string")
@@ -56,23 +52,55 @@ func (create *UserCreate) Validate() error {
 	return nil
 }
 
-func (create *UserCreate) HashPassword() error {
+func (m *User) Validate() error {
+	if err := m.Timestamp.Validate(); err != nil {
+		return m.ewrap(err)
+	}
+	if err := m.UserCreate.Validate(); err != nil {
+		return m.ewrap(err)
+	}
+
 	return nil
 }
 
-func (m *User) Validate() error {
-	if err := m.Timestamp.Validate(); err != nil {
-		return err
-	}
-	if err := m.UserCreate.Validate(); err != nil {
-		return err
+func (create *UserCreate) HashPassword() error {
+	salt := config.USER_PASSWORD_SALT
+	data := []byte(salt + create.Password)
+
+	hashedData, err := bcrypt.GenerateFromPassword(data, bcrypt.DefaultCost)
+	if err != nil {
+		return create.ewrap(err)
 	}
 
+	create.Password = string(hashedData)
 	return nil
+}
+func (create *UserCreate) VerfiyPassword(password string) error {
+	salt := config.USER_PASSWORD_SALT
+	data := []byte(salt + password)
+	err := bcrypt.CompareHashAndPassword([]byte(create.Password), data)
+	return create.ewrap(err)
 }
 
 func (m *User) JSON() (string, error) {
 	e := newModelError("User")
 	data, err := json.Marshal(m)
 	return string(data), e.Wrap(err)
+}
+
+func (create *UserCreate) efrom(text string) error {
+	return errors.New(fmt.Sprintf("(UserCreate) -> %s", text))
+}
+func (create *UserCreate) ewrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("(UserCreate) -> %v", err))
+}
+
+func (m *User) ewrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("(User) -> %v", err))
 }

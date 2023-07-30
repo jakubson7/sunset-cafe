@@ -32,6 +32,9 @@ func NewSqliteDishService(sqliteService *SqliteService) *DishService {
 }
 
 func (s *DishService) ewrap(err error) error {
+	if err == nil {
+		return nil
+	}
 	return errors.New(fmt.Sprintf("(DishService) -> %v", err))
 }
 func (s *DishService) efatal(err error) {
