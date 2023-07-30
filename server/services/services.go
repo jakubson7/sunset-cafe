@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
 )
 
 type ServiceError struct {
@@ -11,21 +12,24 @@ type ServiceError struct {
 	err     error
 }
 
-func (ser *ServiceError) Error() string {
-	return fmt.Sprintf("(Service) --- %s --- %s --- %v", ser.service, ser.method, ser.err)
+func (e *ServiceError) Error() string {
+	return fmt.Sprintf("(Service) --- %s --- %s --- %v", e.service, e.method, e.err)
 }
 
-func (ser *ServiceError) Wrap(err error) error {
+func (e *ServiceError) Wrap(err error) error {
 	if err == nil {
 		return nil
 	}
 
-	ser.err = err
-	return ser
+	e.err = err
+	return e
 }
-func (ser *ServiceError) From(text string) error {
-	ser.err = errors.New(text)
-	return ser
+func (e *ServiceError) From(text string) error {
+	e.err = errors.New(text)
+	return e
+}
+func (e *ServiceError) Fatal(err error) {
+	log.Fatal(e.Wrap(err))
 }
 
 func newServiceError(service string, method string) *ServiceError {
