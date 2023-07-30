@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	"github.com/jakubson7/sunset-cafe/models"
+	"github.com/jakubson7/sunset-cafe/services"
 )
 
 func main() {
-	c := models.UserCreate{"abc@gmail.com", "12345678", "Patryk"}
-	ts := models.NewTimestamp()
-	user := models.User{1, ts, c}
+	sqliteService := services.NewMemorySqliteService()
+	sqliteService.CreateTables()
 
-	fmt.Println(user)
-	fmt.Println(user.Validate())
-	fmt.Println(user.HashPassword())
-	fmt.Println(user)
-	fmt.Println(user.VerfiyPassword("12345d78"))
-	fmt.Println(user.VerfiyPassword("12345678"))
+	userService := services.NewUserService(sqliteService)
+
+	uc := models.UserCreate{"test@gmail.com", "12341234", "James"}
+	u, err := userService.CreateUser(uc)
+	fmt.Printf("%v \n %v", u, err)
+	fmt.Printf("\n---\n %v", u.VerfiyPassword("12341134"))
 }

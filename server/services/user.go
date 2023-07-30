@@ -17,7 +17,7 @@ type UserService struct {
 	getUsers    *sql.Stmt
 }
 
-func NewSqliteUserService(sqliteService *SqliteService) *UserService {
+func NewUserService(sqliteService *SqliteService) *UserService {
 	s := &UserService{}
 	var err error
 
@@ -33,11 +33,16 @@ func NewSqliteUserService(sqliteService *SqliteService) *UserService {
 	return s
 }
 
-func (s *UserService) CreateUser(create models.UserCreate) (models.User, error) {
+func (s *UserService) CreateUser(create models.UserCreate) (*models.User, error) {
 	ts := models.NewTimestamp()
 
 	if err := create.Validate(); err != nil {
-		return models.User{}, s.ewrap(err)
+		return nil, s.ewrap(err)
+	}
+
+	err := create.HashPassword()
+	if err != nil {
+		return nil, s.ewrap(err)
 	}
 
 	result, err := s.createUser.Exec(
@@ -48,23 +53,23 @@ func (s *UserService) CreateUser(create models.UserCreate) (models.User, error) 
 		create.Name,
 	)
 	if err != nil {
-		return models.User{}, s.ewrap(err)
+		return nil, s.ewrap(err)
 	}
 
 	ID, err := result.LastInsertId()
 	if err != nil {
-		return models.User{}, s.ewrap(err)
+		return nil, s.ewrap(err)
 	}
 
-	return models.User{
+	return &models.User{
 		UserID:     ID,
 		Timestamp:  ts,
 		UserCreate: create,
 	}, s.ewrap(err)
 }
 
-func (s *UserService) GetUserByID(ID int64) (models.User, error) {
-	user := models.User{}
+func (s *UserService) GetUserByID(ID int64) (*models.User, error) {
+	user := &models.User{}
 
 	err := s.getUserByID.QueryRow(ID).Scan(
 		&user.UserID,
@@ -75,7 +80,7 @@ func (s *UserService) GetUserByID(ID int64) (models.User, error) {
 		&user.Name,
 	)
 	if err != nil {
-		return user, s.ewrap(err)
+		return nil, s.ewrap(err)
 	}
 
 	err = user.Validate()

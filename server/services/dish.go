@@ -15,7 +15,7 @@ type DishService struct {
 	getDishes   *sql.Stmt
 }
 
-func NewSqliteDishService(sqliteService *SqliteService) *DishService {
+func NewDishService(sqliteService *SqliteService) *DishService {
 	s := &DishService{}
 	var err error
 
