@@ -24,11 +24,11 @@ type User struct {
 const UserSQL = `
 	CREATE TABLE users (
 		userID INTEGER,
-		createdAt INTEGER,
-		updatedAt INTEGER,
-		email TEXT,
-		password TEXT,
-		name TEXT,
+		createdAt INTEGER NOT NULL,
+		updatedAt INTEGER NOT NULL,
+		email TEXT NOT NULL,
+		password TEXT NOT NULL,
+		name TEXT NOT NULL,
 
 		PRIMARY KEY (userID)
 	)
@@ -39,13 +39,13 @@ func (create *UserCreate) Validate() error {
 		return create.efrom("Email cannot be an empty string")
 	}
 
-	if trim(create.Password) == "" {
+	if isEmpty(create.Password) {
 		return create.efrom("Password cannot be an empty string")
 	} else if len(trim(create.Password)) < 8 {
 		return create.efrom("Password has to be at least 8 characters long")
 	}
 
-	if trim(create.Name) == "" {
+	if isEmpty(create.Name) {
 		return create.efrom("Name cannot be an empty string")
 	}
 
@@ -83,9 +83,8 @@ func (create *UserCreate) VerfiyPassword(password string) error {
 }
 
 func (m *User) JSON() (string, error) {
-	e := newModelError("User")
 	data, err := json.Marshal(m)
-	return string(data), e.Wrap(err)
+	return string(data), m.ewrap(err)
 }
 
 func (create *UserCreate) efrom(text string) error {
