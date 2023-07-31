@@ -2,8 +2,6 @@ package services
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 
 	"github.com/jakubson7/sunset-cafe/models"
@@ -19,7 +17,7 @@ func NewMemorySqliteService() *SqliteService {
 
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
-		s.efatal(err)
+		log.Fatal(err)
 	}
 
 	s.DB = db
@@ -28,17 +26,16 @@ func NewMemorySqliteService() *SqliteService {
 }
 
 func (s *SqliteService) CreateTables() {
-	_, err := s.DB.Exec(models.UserSQL)
+	var err error
+
+	_, err = s.DB.Exec(models.UserSQL)
 	_, err = s.DB.Exec(models.DishSQL)
+	_, err = s.DB.Exec(models.ImageSQL)
+	_, err = s.DB.Exec(models.ProductSQL)
+	_, err = s.DB.Exec(models.DishImageSQL)
+	_, err = s.DB.Exec(models.IngredientSQL)
 
 	if err != nil {
-		s.efatal(err)
+		log.Fatal(err)
 	}
-}
-
-func (s *SqliteService) ewrap(err error) error {
-	return errors.New(fmt.Sprintf("(SqliteService) -> %v", err))
-}
-func (s *SqliteService) efatal(err error) {
-	log.Fatal(s.ewrap(err))
 }

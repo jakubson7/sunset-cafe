@@ -44,7 +44,7 @@ const IngredientSQL = `
 
 		PRIMARY KEY (dishID, productID),
 		FOREIGN KEY (dishID) REFERENCES dishes(dishID),
-		FOREIGN KEY (imageID) REFERENCES images(imageID)
+		FOREIGN KEY (productID) REFERENCES products(productID)
 	)
 `
 

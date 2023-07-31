@@ -16,8 +16,7 @@ type Product struct {
 const ProductSQL = `
 	CREATE TABLE products (
 		productID INTEGER,
-		singular TEXT NOT NULL,
-		plural TEXT NOT NULL,
+		name TEXT NOT NULL UNIQUE,
 
 		PRIMARY KEY (productID)
 	)
