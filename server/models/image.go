@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type ImageParams struct {
 	Name string `json:"name"`
 	Alt  string `json:"alt"`
@@ -31,3 +33,14 @@ const ImageSQL = `
 		PRIMARY KEY (imageID)
 	)
 `
+
+func (params *ImageParams) Validate() error {
+	if isEmpty(params.Name) {
+		return errors.New("Name cannot be an empty string")
+	}
+	if isEmpty(params.Alt) {
+		return errors.New("Alt cannot be an empty string")
+	}
+
+	return nil
+}

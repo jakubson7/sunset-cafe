@@ -48,11 +48,11 @@ const IngredientSQL = `
 	)
 `
 
-func (create *DishParams) Validate() error {
-	if isEmpty(create.Name) {
+func (params *DishParams) Validate() error {
+	if isEmpty(params.Name) {
 		return errors.New("name cannot be an empty string")
 	}
-	if create.Price <= 0 {
+	if params.Price <= 0 {
 		return errors.New("price cannot be equal or smaller than 0")
 	}
 

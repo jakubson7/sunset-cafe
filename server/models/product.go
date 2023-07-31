@@ -2,17 +2,15 @@ package models
 
 import (
 	"errors"
-	"fmt"
 )
 
-type ProductCreate struct {
-	Singular string `json:"singular"`
-	Plural   string `json:"plural"`
+type ProductParams struct {
+	Name string `json:"name"`
 }
 
 type Product struct {
 	ProductID int64 `json:"productID"`
-	ProductCreate
+	ProductParams
 }
 
 const ProductSQL = `
@@ -25,17 +23,10 @@ const ProductSQL = `
 	)
 `
 
-func (create *ProductCreate) Validate() error {
-	if isEmpty(create.Singular) {
-		return create.efrom("Name cannot be an empty string")
-	}
-	if isEmpty(create.Plural) {
-		return create.efrom("Name cannot be an empty string")
+func (params *ProductParams) Validate() error {
+	if isEmpty(params.Name) {
+		return errors.New("Name cannot be an empty string")
 	}
 
 	return nil
-}
-
-func (create *ProductCreate) efrom(text string) error {
-	return errors.New(fmt.Sprintf("(ProductCreate) -> %s", text))
 }
