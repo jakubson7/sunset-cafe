@@ -7,7 +7,7 @@ type ImageParams struct {
 	Alt  string `json:"alt"`
 }
 
-type ImageVariants struct {
+type ImageURL struct {
 	Blur   string `json:"blur"`
 	Small  string `json:"small"`
 	Medium string `json:"medium"`
@@ -17,7 +17,7 @@ type ImageVariants struct {
 type Image struct {
 	ImageID int64 `json:"imageID"`
 	ImageParams
-	Variants ImageVariants `json:"variants"`
+	URL ImageURL `json:"variants"`
 }
 
 const ImageSQL = `
@@ -25,10 +25,10 @@ const ImageSQL = `
 		imageID INTEGER,
 		name TEXT NOT NULL,
 		alt TEXT NOT NULL,
-		variants_blur TEXT NOT NULL,
-		variants_small TEXT NOT NULL,
-		variants_medium TEXT NOT NULL,
-		variants_large TEXT NOT NULL,
+		url_blur TEXT NOT NULL,
+		url_small TEXT NOT NULL,
+		url_medium TEXT NOT NULL,
+		url_large TEXT NOT NULL,
 
 		PRIMARY KEY (imageID)
 	)

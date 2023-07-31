@@ -9,7 +9,6 @@ import (
 )
 
 type UserService struct {
-	name        string
 	db          *sql.DB
 	createUser  *sql.Stmt
 	getUserByID *sql.Stmt
