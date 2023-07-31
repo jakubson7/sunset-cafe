@@ -2,11 +2,10 @@ package services
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 
 	"github.com/jakubson7/sunset-cafe/models"
+	"github.com/jakubson7/sunset-cafe/utils"
 )
 
 type UserService struct {
@@ -27,45 +26,42 @@ func NewUserService(sqliteService *SqliteService) *UserService {
 	s.getUsers, err = s.db.Prepare(`SELECT * FROM users LIMIT $1 OFFSET $2`)
 
 	if err != nil {
-		s.efatal(err)
+		log.Fatal(err)
 	}
 
 	return s
 }
 
-func (s *UserService) CreateUser(create models.UserCreate) (*models.User, error) {
-	ts := models.NewTimestamp()
-
-	if err := create.Validate(); err != nil {
-		return nil, s.ewrap(err)
+func (s *UserService) CreateUser(params models.UserParams) (*models.User, error) {
+	if err := params.Validate(); err != nil {
+		return nil, err
 	}
 
-	err := create.HashPassword()
+	hashedPassword, err := utils.HashPassword(params.Password)
 	if err != nil {
-		return nil, s.ewrap(err)
+		return nil, err
 	}
+
+	params.Password = hashedPassword
 
 	result, err := s.createUser.Exec(
-		ts.CreatedAt,
-		ts.UpdatedAt,
-		create.Email,
-		create.Password,
-		create.Name,
+		params.Email,
+		params.Password,
+		params.Name,
 	)
 	if err != nil {
-		return nil, s.ewrap(err)
+		return nil, err
 	}
 
 	ID, err := result.LastInsertId()
 	if err != nil {
-		return nil, s.ewrap(err)
+		return nil, err
 	}
 
 	return &models.User{
 		UserID:     ID,
-		Timestamp:  ts,
-		UserCreate: create,
-	}, s.ewrap(err)
+		UserParams: params,
+	}, err
 }
 
 func (s *UserService) GetUserByID(ID int64) (*models.User, error) {
@@ -73,24 +69,22 @@ func (s *UserService) GetUserByID(ID int64) (*models.User, error) {
 
 	err := s.getUserByID.QueryRow(ID).Scan(
 		&user.UserID,
-		&user.CreatedAt,
-		&user.UpdatedAt,
 		&user.Email,
 		&user.Password,
 		&user.Name,
 	)
 	if err != nil {
-		return nil, s.ewrap(err)
+		return nil, err
 	}
 
 	err = user.Validate()
-	return user, s.ewrap(err)
+	return user, err
 }
 
 func (s *UserService) GetUsers(limit int, offset int) ([]models.User, error) {
 	rows, err := s.getUsers.Query(limit, offset)
 	if err != nil {
-		return nil, s.ewrap(err)
+		return nil, err
 	}
 
 	users := []models.User{}
@@ -98,31 +92,19 @@ func (s *UserService) GetUsers(limit int, offset int) ([]models.User, error) {
 		user := models.User{}
 		err := rows.Scan(
 			&user.UserID,
-			&user.CreatedAt,
-			&user.UpdatedAt,
 			&user.Email,
 			&user.Password,
 			&user.Name,
 		)
 		if err != nil {
-			return nil, s.ewrap(err)
+			return nil, err
 		}
 		if err := user.Validate(); err != nil {
-			return nil, s.ewrap(err)
+			return nil, err
 		}
 
 		users = append(users, user)
 	}
 
 	return users, nil
-}
-
-func (s *UserService) ewrap(err error) error {
-	if err == nil {
-		return nil
-	}
-	return errors.New(fmt.Sprintf("(UserService) -> %v", err))
-}
-func (s *UserService) efatal(err error) {
-	log.Fatal(s.ewrap(err))
 }

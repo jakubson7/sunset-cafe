@@ -2,8 +2,6 @@ package services
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 )
 
@@ -25,18 +23,8 @@ func NewDishService(sqliteService *SqliteService) *DishService {
 	s.getDishes, err = s.db.Prepare(`SELECT * FROM dishes LIMIT $1 OFFSET $2`)
 
 	if err != nil {
-		s.efatal(err)
+		log.Fatal(err)
 	}
 
 	return s
-}
-
-func (s *DishService) ewrap(err error) error {
-	if err == nil {
-		return nil
-	}
-	return errors.New(fmt.Sprintf("(DishService) -> %v", err))
-}
-func (s *DishService) efatal(err error) {
-	log.Fatal(s.ewrap(err))
 }

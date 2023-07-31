@@ -1,6 +1,6 @@
 package models
 
-type ImageCreate struct {
+type ImageParams struct {
 	Name string `json:"name"`
 	Alt  string `json:"alt"`
 }
@@ -14,16 +14,13 @@ type ImageVariants struct {
 
 type Image struct {
 	ImageID int64 `json:"imageID"`
-	Timestamp
-	ImageCreate
+	ImageParams
 	Variants ImageVariants `json:"variants"`
 }
 
 const ImageSQL = `
 	CREATE TABLE images (
 		imageID INTEGER,
-		createdAt INTEGER NOT NULL,
-		updatedAt INTEGER NOT NULL,
 		name TEXT NOT NULL,
 		alt TEXT NOT NULL,
 		variants_blur TEXT NOT NULL,

@@ -6,28 +6,30 @@ import (
 )
 
 type ProductCreate struct {
-	Name string `json:"name"`
+	Singular string `json:"singular"`
+	Plural   string `json:"plural"`
 }
 
 type Product struct {
 	ProductID int64 `json:"productID"`
-	Timestamp
 	ProductCreate
 }
 
 const ProductSQL = `
 	CREATE TABLE products (
 		productID INTEGER,
-		createdAt INTEGER NOT NULL,
-		updatedAt INTEGER NOT NULL,
-		name TEXT NOT NULL,
+		singular TEXT NOT NULL,
+		plural TEXT NOT NULL,
 
 		PRIMARY KEY (productID)
 	)
 `
 
 func (create *ProductCreate) Validate() error {
-	if isEmpty(create.Name) {
+	if isEmpty(create.Singular) {
+		return create.efrom("Name cannot be an empty string")
+	}
+	if isEmpty(create.Plural) {
 		return create.efrom("Name cannot be an empty string")
 	}
 

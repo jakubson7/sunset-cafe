@@ -2,10 +2,9 @@ package models
 
 import (
 	"errors"
-	"fmt"
 )
 
-type DishCreate struct {
+type DishParams struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
@@ -13,9 +12,7 @@ type DishCreate struct {
 
 type Dish struct {
 	DishID int64 `json:"dishID"`
-	Timestamp
-	DishCreate
-
+	DishParams
 	Images      []Image   `json:"images"`
 	Ingredients []Product `json:"ingredients"`
 }
@@ -23,8 +20,6 @@ type Dish struct {
 const DishSQL = `
 	CREATE TABLE dishes (
 		dishID INTEGER,
-		createdAt INTEGER NOT NULL,
-		updatedAt INTEGER NOT NULL,
 		name TEXT NOT NULL,
 		description TEXT NOT NULL,
 		price REAL NOT NULL,
@@ -53,26 +48,13 @@ const IngredientSQL = `
 	)
 `
 
-func (create *DishCreate) Validate() error {
+func (create *DishParams) Validate() error {
 	if isEmpty(create.Name) {
-		return create.efrom("name cannot be an empty string")
+		return errors.New("name cannot be an empty string")
 	}
 	if create.Price <= 0 {
-		return create.efrom("price cannot be equal or smaller than 0")
+		return errors.New("price cannot be equal or smaller than 0")
 	}
 
 	return nil
-}
-
-func (create *DishCreate) efrom(text string) error {
-	return errors.New(fmt.Sprintf("(DishCreate) -> %s", text))
-}
-func (create *Dish) efrom(text string) error {
-	return errors.New(fmt.Sprintf("(Dish) -> %s", text))
-}
-func (create *Dish) ewrap(err error) error {
-	if err == nil {
-		return nil
-	}
-	return errors.New(fmt.Sprintf("(Dish) -> %v", err))
 }
