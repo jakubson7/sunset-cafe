@@ -1,7 +1,6 @@
 package models
 
 import (
-	"encoding/json"
 	"errors"
 )
 
@@ -43,9 +42,4 @@ func (params *UserParams) Validate() error {
 	}
 
 	return nil
-}
-
-func (m *User) JSON() (string, error) {
-	data, err := json.Marshal(m)
-	return string(data), err
 }
