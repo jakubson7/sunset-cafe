@@ -5,16 +5,38 @@ import (
 )
 
 type DishParams struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Price       float64            `json:"price"`
+	Images      []DishImageParams  `json:"dishImages"`
+	Ingredients []IngredientParams `json:"ingredients"`
 }
 
 type Dish struct {
-	DishID int64 `json:"dishID"`
-	DishParams
+	DishID      int64     `json:"dishID"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
 	Images      []Image   `json:"images"`
-	Ingredients []Product `json:"ingredients"`
+	Ingredients []Product `json:"products"`
+}
+
+type DishImage struct {
+	DishID  int64 `json:"dishID"`
+	ImageID int64 `json:"imageID"`
+}
+
+type DishImageParams struct {
+	ImageID int64 `json:"imageID"`
+}
+
+type Ingredient struct {
+	DishID    int64 `json:"dishID"`
+	ProductID int64 `json:"productID"`
+}
+
+type IngredientParams struct {
+	ProductID int64 `json:"productID"`
 }
 
 const DishSQL = `

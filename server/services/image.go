@@ -82,7 +82,7 @@ func (s *ImageService) CreateImage(data []byte, params models.ImageParams) (*mod
 		URL:         URL,
 	}
 
-	_, err = s.UpdateImage(image)
+	err = s.UpdateImage(image)
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +90,9 @@ func (s *ImageService) CreateImage(data []byte, params models.ImageParams) (*mod
 	return &image, nil
 }
 
-func (s *ImageService) UpdateImage(image models.Image) (*models.Image, error) {
+func (s *ImageService) UpdateImage(image models.Image) error {
 	if err := image.Validate(); err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err := s.updateImage.Exec(
@@ -104,9 +104,10 @@ func (s *ImageService) UpdateImage(image models.Image) (*models.Image, error) {
 		image.URL.Medium,
 		image.URL.Large,
 	)
-	if err != nil {
-		return nil, err
-	}
+	return err
+}
 
-	return &image, nil
+func (s *ImageService) DeleteImage(ID int64) error {
+	_, err := s.deleteImage.Exec(ID)
+	return err
 }

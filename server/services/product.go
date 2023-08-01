@@ -10,8 +10,7 @@ import (
 type ProductService struct {
 	db             *sql.DB
 	createProduct  *sql.Stmt
-	getProductByID *sql.Stmt
-	getProducts    *sql.Stmt
+	getAllProducts *sql.Stmt
 	updateProduct  *sql.Stmt
 	deleteProduct  *sql.Stmt
 }
@@ -22,8 +21,14 @@ func NewProductService(sqliteService *SqliteService) *ProductService {
 
 	s.db = sqliteService.DB
 	s.createProduct, err = s.db.Prepare(`INSERT INTO products (name) values ($1)`)
+	s.getAllProducts, err = s.db.Prepare(`SELECT * FROM products`)
 	s.updateProduct, err = s.db.Prepare(`UPDATE products SET name = $2 WHERE productID = $1`)
-	s.deleteProduct, err = s.db.Prepare(`DELETE FROM products WHERE productID = $1`)
+	s.deleteProduct, err = s.db.Prepare(`
+		BEGIN TRANSACTION;
+		DELETE FROM ingredients WHERE ingredients.productID = $1;
+		DELETE FROM products WHERE products.productID = $1;
+		COMMIT;
+	`)
 
 	if err != nil {
 		log.Fatal(err)
@@ -53,17 +58,38 @@ func (s *ProductService) CreateProduct(params models.ProductParams) (*models.Pro
 	}, nil
 }
 
-func (s *ProductService) UpdateProduct(product models.Product) (*models.Product, error) {
-	if err := product.Validate(); err != nil {
-		return nil, err
-	}
+func (s *ProductService) GetAllProducts() ([]models.Product, error) {
+	var products []models.Product
 
-	_, err := s.updateProduct.Exec(product.ProductID, product.Name)
+	rows, err := s.getAllProducts.Query()
 	if err != nil {
 		return nil, err
 	}
 
-	return &product, nil
+	for rows.Next() {
+		product := models.Product{}
+
+		err := rows.Scan(
+			&product.ProductID,
+			&product.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
+}
+
+func (s *ProductService) UpdateProduct(product models.Product) error {
+	if err := product.Validate(); err != nil {
+		return err
+	}
+
+	_, err := s.updateProduct.Exec(product.ProductID, product.Name)
+	return err
 }
 
 func (s *ProductService) DeleteProduct(ID int64) error {
