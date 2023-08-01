@@ -17,7 +17,7 @@ type ImageURL struct {
 type Image struct {
 	ImageID int64 `json:"imageID"`
 	ImageParams
-	URL ImageURL `json:"variants"`
+	URL ImageURL `json:"URL"`
 }
 
 const ImageSQL = `
@@ -25,10 +25,10 @@ const ImageSQL = `
 		imageID INTEGER,
 		name TEXT NOT NULL,
 		alt TEXT NOT NULL,
-		url_blur TEXT NOT NULL,
-		url_small TEXT NOT NULL,
-		url_medium TEXT NOT NULL,
-		url_large TEXT NOT NULL,
+		URL_blur TEXT NOT NULL,
+		URL_small TEXT NOT NULL,
+		URL_medium TEXT NOT NULL,
+		URL_large TEXT NOT NULL,
 
 		PRIMARY KEY (imageID)
 	)

@@ -8,10 +8,12 @@ import (
 )
 
 type ProductService struct {
-	db            *sql.DB
-	createProduct *sql.Stmt
-	updateProduct *sql.Stmt
-	deleteProduct *sql.Stmt
+	db             *sql.DB
+	createProduct  *sql.Stmt
+	getProductByID *sql.Stmt
+	getProducts    *sql.Stmt
+	updateProduct  *sql.Stmt
+	deleteProduct  *sql.Stmt
 }
 
 func NewProductService(sqliteService *SqliteService) *ProductService {
@@ -56,7 +58,7 @@ func (s *ProductService) UpdateProduct(product models.Product) (*models.Product,
 		return nil, err
 	}
 
-	_, err := s.updateProduct.Exec(product.Name)
+	_, err := s.updateProduct.Exec(product.ProductID, product.Name)
 	if err != nil {
 		return nil, err
 	}
