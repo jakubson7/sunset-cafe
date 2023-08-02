@@ -13,6 +13,7 @@ type DishService struct {
 	getDishByID         *sql.Stmt
 	getDishImageByID    *sql.Stmt
 	getIngredientByID   *sql.Stmt
+	getDishes           *sql.Stmt
 	getDishImages       *sql.Stmt
 	getIngredients      *sql.Stmt
 	sqlCreateDishImage  string
@@ -25,9 +26,9 @@ func NewDishService(sqliteService *SqliteService) *DishService {
 
 	s.db = sqliteService.DB
 	s.createDish, err = s.db.Prepare(`INSERT INTO dishes (name, description, price) VALUES ($1, $2, $3)`)
-	s.getDishByID, err = s.db.Prepare(`SELECT * FROM dishes WHERE dishID = $1`)
 	s.sqlCreateDishImage = `INSERT INTO dishImages (dishID, imageID) VALUES ($1, $2)`
 	s.sqlCreateIngredient = `INSERT INTO ingredients (dishID, productID) VALUES ($1, $2)`
+	s.getDishByID, err = s.db.Prepare(`SELECT * FROM dishes WHERE dishID = $1`)
 	s.getDishImageByID, err = s.db.Prepare(`
 		SELECT images.* FROM dishes
 			INNER JOIN dishImages ON dishImages.dishID = dishes.dishID
@@ -40,8 +41,9 @@ func NewDishService(sqliteService *SqliteService) *DishService {
 			INNER JOIN products ON products.productID = ingredients.productID
 			WHERE dishes.dishID = $1
 	`)
+	s.getDishes, err = s.db.Prepare(`SELECT * FROM dishes LIMIT $1 OFFSET $2`)
 	s.getDishImages, err = s.db.Prepare(`
-		SELECT dishes.dishID, images.* FROM dishes
+		SELECT dishImages.dishID, images.* FROM dishes
 			INNER JOIN dishImages ON dishImages.dishID = dishes.dishID
 			INNER JOIN images ON images.imageID = dishImages.imageID
 			WHERE dishes.dishID IN (
@@ -49,7 +51,7 @@ func NewDishService(sqliteService *SqliteService) *DishService {
 			)
 	`)
 	s.getIngredients, err = s.db.Prepare(`
-		SELECT dishes.dishID, products.* FROM dishes
+		SELECT ingredients.dishID, products.* FROM dishes
 			INNER JOIN ingredients ON ingredients.dishID = dishes.dishID
 			INNER JOIN products ON products.productID = ingredients.productID
 			WHERE dishes.dishID IN (
@@ -147,8 +149,6 @@ func (s *DishService) CreateDish(params models.DishParams) (*models.Dish, error)
 }
 func (s *DishService) GetDishByID(ID int64) (*models.Dish, error) {
 	var dish models.Dish
-	var images []models.Image
-	var products []models.Product
 
 	err := s.getDishByID.QueryRow(ID).Scan(
 		&dish.DishID,
@@ -172,7 +172,7 @@ func (s *DishService) GetDishByID(ID int64) (*models.Dish, error) {
 	for imageRows.Next() {
 		image := models.Image{}
 
-		err := imageRows.Scan(
+		if err := imageRows.Scan(
 			&image.ImageID,
 			&image.Name,
 			&image.Alt,
@@ -180,12 +180,11 @@ func (s *DishService) GetDishByID(ID int64) (*models.Dish, error) {
 			&image.URL.Small,
 			&image.URL.Medium,
 			&image.URL.Large,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 
-		images = append(images, image)
+		dish.Images = append(dish.Images, image)
 	}
 
 	productRows, err := s.getIngredientByID.Query(ID)
@@ -204,14 +203,85 @@ func (s *DishService) GetDishByID(ID int64) (*models.Dish, error) {
 			return nil, err
 		}
 
-		products = append(products, product)
+		dish.Ingredients = append(dish.Ingredients, product)
 	}
-
-	dish.Images = images
-	dish.Ingredients = products
 
 	return &dish, nil
 }
 func (s *DishService) GetDishes(limit int, offset int) ([]models.Dish, error) {
-	return nil, nil
+	dishMap := make(map[int64]*models.Dish)
+
+	dishRows, err := s.getDishes.Query(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	for dishRows.Next() {
+		dish := models.Dish{}
+
+		if err := dishRows.Scan(
+			&dish.DishID,
+			&dish.Name,
+			&dish.Description,
+			&dish.Price,
+		); err != nil {
+			return nil, err
+		}
+
+		dishMap[dish.DishID] = &dish
+	}
+
+	imageRows, err := s.getDishImages.Query(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	for imageRows.Next() {
+		var dishID int64
+		image := models.Image{}
+
+		if err := imageRows.Scan(
+			&dishID,
+			&image.ImageID,
+			&image.Name,
+			&image.Alt,
+			&image.URL.Blur,
+			&image.URL.Small,
+			&image.URL.Medium,
+			&image.URL.Large,
+		); err != nil {
+			return nil, err
+		}
+
+		dish := dishMap[dishID]
+		dish.Images = append(dish.Images, image)
+	}
+
+	productRows, err := s.getIngredients.Query(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	for productRows.Next() {
+		var dishID int64
+		product := models.Product{}
+
+		if err := productRows.Scan(
+			&dishID,
+			&product.ProductID,
+			&product.Name,
+		); err != nil {
+			return nil, err
+		}
+
+		dish := dishMap[dishID]
+		dish.Ingredients = append(dish.Ingredients, product)
+	}
+
+	var dishes []models.Dish
+	for _, dish := range dishMap {
+		dishes = append(dishes, *dish)
+	}
+
+	return dishes, nil
 }

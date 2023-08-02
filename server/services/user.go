@@ -89,16 +89,13 @@ func (s *UserService) GetUsers(limit int, offset int) ([]models.User, error) {
 	users := []models.User{}
 	for rows.Next() {
 		user := models.User{}
-		err := rows.Scan(
+
+		if err := rows.Scan(
 			&user.UserID,
 			&user.Email,
 			&user.Password,
 			&user.Name,
-		)
-		if err != nil {
-			return nil, err
-		}
-		if err := user.Validate(); err != nil {
+		); err != nil {
 			return nil, err
 		}
 

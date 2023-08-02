@@ -41,8 +41,26 @@ func main() {
 			models.IngredientParams{4},
 		},
 	})
+	_, err = dishService.CreateDish(models.DishParams{
+		Name:        "Pizza",
+		Description: "Tasty nad traditional italian dish",
+		Price:       35,
+		Images:      []models.DishImageParams{},
+		Ingredients: []models.IngredientParams{
+			models.IngredientParams{1},
+			models.IngredientParams{2},
+			models.IngredientParams{3},
+			models.IngredientParams{4},
+		},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("\n %v", dish)
+	fmt.Printf("%v\n", dish)
+
+	dishes, err := dishService.GetDishes(10, 0)
+	if err != nil {
+		log.Fatal()
+	}
+	fmt.Println(dishes)
 }

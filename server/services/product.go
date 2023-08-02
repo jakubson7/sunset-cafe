@@ -69,11 +69,10 @@ func (s *ProductService) GetAllProducts() ([]models.Product, error) {
 	for rows.Next() {
 		product := models.Product{}
 
-		err := rows.Scan(
+		if err := rows.Scan(
 			&product.ProductID,
 			&product.Name,
-		)
-		if err != nil {
+		); err != nil {
 			return nil, err
 		}
 
