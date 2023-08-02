@@ -59,13 +59,12 @@ func (s *ProductService) CreateProduct(params models.ProductParams) (*models.Pro
 }
 
 func (s *ProductService) GetAllProducts() ([]models.Product, error) {
-	var products []models.Product
-
 	rows, err := s.getAllProducts.Query()
 	if err != nil {
 		return nil, err
 	}
 
+	var products []models.Product
 	for rows.Next() {
 		product := models.Product{}
 

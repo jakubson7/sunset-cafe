@@ -86,7 +86,7 @@ func (s *UserService) GetUsers(limit int, offset int) ([]models.User, error) {
 		return nil, err
 	}
 
-	users := []models.User{}
+	var users []models.User
 	for rows.Next() {
 		user := models.User{}
 

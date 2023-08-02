@@ -89,6 +89,50 @@ func (s *ImageService) CreateImage(data []byte, params models.ImageParams) (*mod
 
 	return &image, nil
 }
+func (s *ImageService) GetImageByID(ID int64) (*models.Image, error) {
+	image := new(models.Image)
+
+	if err := s.getImageByID.QueryRow().Scan(
+		&image.ImageID,
+		&image.Name,
+		&image.Alt,
+		&image.URL.Blur,
+		&image.URL.Small,
+		&image.URL.Medium,
+		&image.URL.Large,
+	); err != nil {
+		return nil, err
+	}
+
+	return image, nil
+}
+func (s *ImageService) GetImages(limit int, offset int) ([]models.Image, error) {
+	rows, err := s.getImages.Query(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var images []models.Image
+	for rows.Next() {
+		image := models.Image{}
+
+		if err := rows.Scan(
+			&image.ImageID,
+			&image.Name,
+			&image.Alt,
+			&image.URL.Blur,
+			&image.URL.Small,
+			&image.URL.Medium,
+			&image.URL.Large,
+		); err != nil {
+			return nil, err
+		}
+
+		images = append(images, image)
+	}
+
+	return images, nil
+}
 
 func (s *ImageService) UpdateImage(image models.Image) error {
 	if err := image.Validate(); err != nil {
