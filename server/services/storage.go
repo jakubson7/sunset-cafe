@@ -1,6 +1,11 @@
 package services
 
-import "github.com/jakubson7/sunset-cafe/models"
+import (
+	"log"
+
+	"github.com/jakubson7/sunset-cafe/models"
+	"github.com/jakubson7/sunset-cafe/utils"
+)
 
 type StorageService interface {
 	Init()
@@ -11,10 +16,25 @@ type StorageService interface {
 }
 
 type LocalStorageServiceConfig struct {
-	addr string
+	addr    string
+	dirname string
+	quality int
 }
 
 type LocalStorageService struct {
 	defaultImageURL models.ImageURL
 	config          LocalStorageServiceConfig
+}
+
+func NewLocalStorageService(config LocalStorageServiceConfig) *LocalStorageService {
+	s := new(LocalStorageService)
+
+	err := utils.CreateFolder(config.dirname)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s.config = config
+
+	return s
 }

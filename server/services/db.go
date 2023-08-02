@@ -39,3 +39,7 @@ func (s *SqliteService) CreateTables() {
 		log.Fatal(err)
 	}
 }
+
+func (s *SqliteService) Close() {
+	s.Close()
+}

@@ -16,7 +16,7 @@ type UserService struct {
 }
 
 func NewUserService(sqliteService *SqliteService) *UserService {
-	s := &UserService{}
+	s := new(UserService)
 	var err error
 
 	s.db = sqliteService.DB
