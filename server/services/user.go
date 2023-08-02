@@ -32,10 +32,6 @@ func NewUserService(sqliteService *SqliteService) *UserService {
 }
 
 func (s *UserService) CreateUser(params models.UserParams) (*models.User, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
 	hashedPassword, err := utils.HashPassword(params.Password)
 	if err != nil {
 		return nil, err

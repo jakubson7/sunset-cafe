@@ -49,10 +49,6 @@ func NewImageService(sqliteService *SqliteService, storageService StorageService
 }
 
 func (s *ImageService) CreateImage(data []byte, params models.ImageParams) (*models.Image, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
 	URL := s.StorageService.GetDefaultImageURL()
 	result, err := s.createImage.Exec(
 		params.Alt,
@@ -135,10 +131,6 @@ func (s *ImageService) GetImages(limit int, offset int) ([]models.Image, error) 
 }
 
 func (s *ImageService) UpdateImage(image models.Image) error {
-	if err := image.Validate(); err != nil {
-		return err
-	}
-
 	_, err := s.updateImage.Exec(
 		image.ImageID,
 		image.Name,

@@ -38,10 +38,6 @@ func NewProductService(sqliteService *SqliteService) *ProductService {
 }
 
 func (s *ProductService) CreateProduct(params models.ProductParams) (*models.Product, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
 	result, err := s.createProduct.Exec(params.Name)
 	if err != nil {
 		return nil, err
@@ -82,10 +78,6 @@ func (s *ProductService) GetAllProducts() ([]models.Product, error) {
 }
 
 func (s *ProductService) UpdateProduct(product models.Product) error {
-	if err := product.Validate(); err != nil {
-		return err
-	}
-
 	_, err := s.updateProduct.Exec(product.ProductID, product.Name)
 	return err
 }

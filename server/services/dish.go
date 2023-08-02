@@ -105,10 +105,6 @@ func (s *DishService) CreateIngredients(ingredients []models.Ingredient) error {
 	return tx.Commit()
 }
 func (s *DishService) CreateDish(params models.DishParams) (*models.Dish, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
 	result, err := s.createDish.Exec(
 		params.Name,
 		params.Description,
