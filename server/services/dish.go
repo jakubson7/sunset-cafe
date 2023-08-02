@@ -145,6 +145,8 @@ func (s *DishService) CreateDish(params models.DishParams) (*models.Dish, error)
 }
 func (s *DishService) GetDishByID(ID int64) (*models.Dish, error) {
 	var dish models.Dish
+	dish.Images = make([]models.Image, 0)
+	dish.Ingredients = make([]models.Product, 0)
 
 	err := s.getDishByID.QueryRow(ID).Scan(
 		&dish.DishID,
@@ -214,6 +216,8 @@ func (s *DishService) GetDishes(limit int, offset int) ([]models.Dish, error) {
 
 	for dishRows.Next() {
 		dish := models.Dish{}
+		dish.Images = make([]models.Image, 0)
+		dish.Ingredients = make([]models.Product, 0)
 
 		if err := dishRows.Scan(
 			&dish.DishID,
